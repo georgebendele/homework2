@@ -1,0 +1,179 @@
+Sub Ticker2016()
+
+' Initiate worksheet loop
+
+Dim Circ As Worksheet
+
+For Each Circ In Worksheets
+
+Circ.Activate
+
+' Create variables to hold output data
+
+Dim Tick As String
+Dim TotStockVol As Double
+Dim YearChange As Double
+Dim YearOpen As Double
+Dim YearClose As Double
+
+
+' Set initial values
+
+TotStockVol = Cells(2, 7).Value
+YearOpen = Cells(2, 3).Value
+
+' Set headers for output columns
+
+Cells(1, 9).Value = "Ticker"
+Cells(1, 10).Value = "Yearly Change"
+Cells(1, 11).Value = "Percent Change"
+Cells(1, 12).Value = "Total Stock Volume"
+
+' Cell number format
+
+Columns(10).NumberFormat = "0.00"
+Columns(11).NumberFormat = "0.00%"
+
+' Set counter variable for inserting data below headers
+
+Dim MoveDown As Integer
+MoveDown = 2
+
+' Set variable for finding number of rows of data.
+
+NumRows = Range("A1", Range("A1").End(xlDown)).Rows.Count
+
+' Select cell a1.
+      Range("A2").Select
+
+' Loop through rows (change back to NumRows for full data)
+
+For i = 2 To NumRows
+
+' If the value of the active cell is equal to the value of the cell below, then insert the Ticker symbol under the Ticker header and sum the volumes
+
+    If Cells(i + 1, 1).Value = Cells(i, 1).Value Then
+        Tick = Cells(i, 1).Value
+        Cells(MoveDown, 9).Value = Tick
+        TotStockVol = CLng(Cells(i + 1, 7)) + TotStockVol
+        Cells(MoveDown, 12).Value = TotStockVol
+        
+' Otherwise, calculated change in stock price (format cell color), calc % change, insert next ticker symbol under Ticker header, reset opening value and volumne for next stock
+
+    Else
+        YearClose = Cells(i, 6)
+        YearChange = YearClose - YearOpen
+        Cells(MoveDown, 10).Value = YearChange
+        If YearChange < 0 Then
+            Cells(MoveDown, 10).Interior.ColorIndex = 3
+            Else
+            Cells(MoveDown, 10).Interior.ColorIndex = 4
+        End If
+        
+        If YearOpen > 0 Then
+        Cells(MoveDown, 11).Value = (YearChange / YearOpen)
+        End If
+        
+    YearOpen = Cells(i + 1, 6)
+        MoveDown = MoveDown + 1
+        Tick = Cells(i + 1, 1).Value
+        Cells(MoveDown, 9).Value = Tick
+        TotStockVol = Cells(i + 1, 7).Value
+        
+    End If
+    
+' Move to next row
+
+   ActiveCell.Offset(1, 0).Select
+Next
+
+' Included message to indicate that program is going to next page since takes so long to process, this indicates milestones and relays that the program is working
+        
+        MsgBox ("New Page")
+        
+' Move to next worksheet
+
+Next Circ
+
+' New loop through worksheets to find greatest increases and decreases
+
+For Each Circ In Worksheets
+
+Circ.Activate
+
+' Create variables
+
+Dim BigUpTick As String
+Dim BigUps As Double
+Dim BigDTick As String
+Dim BigDs As Double
+Dim BigVTick As String
+Dim BigVs As Double
+
+BigUps = Cells(2, 11).Value
+BigDs = Cells(2, 11).Value
+BigVs = Cells(2, 12).Value
+
+' Set headers for output columns
+
+Cells(1, 16).Value = "Ticker"
+Cells(1, 17).Value = "Value"
+Cells(2, 15).Value = "Greatest % Increase"
+Cells(3, 15).Value = "Greatest % Decrease"
+Cells(4, 15).Value = "Greatest Total Volume"
+
+' Set variable for finding number of rows of data.
+
+NumRows = Range("I1", Range("I1").End(xlDown)).Rows.Count
+
+' Select cell a1.
+      Range("I2").Select
+      
+' Loop through rows (change back to NumRows for full data)
+
+For i = 2 To NumRows
+
+' If the value of the active cell is greater/less then to the value of the cell below, change variables
+
+    If Cells(i + 1, 11).Value > BigUps Then
+        BigUps = Cells(i + 1, 11).Value
+        BigUpTick = Cells(i + 1, 9).Value
+        
+    ElseIf Cells(i + 1, 11).Value < BigDs Then
+        BigDs = Cells(i + 1, 11).Value
+        BigDTick = Cells(i + 1, 9).Value
+    End If
+    
+
+    If Cells(i + 1, 12).Value > BigVs Then
+        BigVs = Cells(i + 1, 12).Value
+        BigVTick = Cells(i + 1, 9).Value
+    End If
+        
+' Move to next row
+
+   ActiveCell.Offset(1, 0).Select
+Next
+
+' Print output
+
+Cells(2, 16).Value = BigUpTick
+Cells(3, 16).Value = BigDTick
+Cells(4, 16).Value = BigVTick
+
+Cells(2, 17).Value = BigUps
+Cells(3, 17).Value = BigDs
+Cells(4, 17).Value = BigVs
+
+' Format columns width
+
+Columns("A:Q").AutoFit
+
+        MsgBox ("New Page")
+        
+ ' Next page
+        
+Next Circ
+
+
+End Sub
